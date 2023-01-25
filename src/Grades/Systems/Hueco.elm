@@ -89,7 +89,7 @@ fromLinearScale x =
 
 zero : Grade
 zero =
-    Grade 0 Mod.Base
+    Grade -1 Mod.Base
 
 
 next : Grade -> Grade
