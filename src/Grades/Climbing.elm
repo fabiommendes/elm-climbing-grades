@@ -1,9 +1,8 @@
 module Grades.Climbing exposing
     ( Grade, System(..)
     , show, showAs, parse, parseAs
-    , simplify, next, prev, to
+    , simplify, withMod, next, prev, to
     , zero, compare, toLinearScale, fromLinearScale
-    , withMod
     )
 
 {-| Climbing grades representation and conversion
@@ -28,7 +27,7 @@ Conversions are based on the table
 
 ## Transforms
 
-@docs simplify, next, prev, to
+@docs simplify, withMod, next, prev, to
 
 
 ## Ordering and comparisons

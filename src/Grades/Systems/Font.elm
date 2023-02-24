@@ -22,7 +22,6 @@ import Grades.Systems.Common exposing (..)
 import Grades.Systems.Hueco as Hueco
 import Grades.Util exposing (piecewise, splitNum)
 import Parser
-import Test.Runner.Failure exposing (Reason(..))
 
 
 type alias Grade =
