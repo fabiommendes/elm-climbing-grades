@@ -1,4 +1,4 @@
-module Grades.Systems.Us exposing (Grade, fromLinearScale, next, order, parse, prev, show, simplify, toLinearScale, zero)
+module Grades.Systems.Us exposing (Grade, fromLinearScale, next, order, parse, prev, show, simplify, toLinearScale, withMod, zero)
 
 import Grades.Levels.ABCD as Lvl
 import Grades.Levels.Mod as Mod
@@ -39,6 +39,11 @@ simplify { n, cat } =
 
     else
         { n = n, cat = cat, mod = Mod.Base }
+
+
+withMod : Mod.Mod -> Grade -> Grade
+withMod mod { n, cat } =
+    Grade n cat mod
 
 
 fromLinearScale : Float -> Grade

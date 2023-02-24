@@ -8,7 +8,7 @@ module Grades.Systems.Br exposing
     , show
     , simplify
     , toLinearScale
-    , zero
+    , zero, withMod
     )
 
 import Grades.Levels.ABC as Lvl
@@ -74,6 +74,11 @@ parse st =
 simplify : Grade -> Grade
 simplify { n, cat } =
     Grade n cat Mod.Base
+
+
+withMod : Mod.Mod -> Grade -> Grade
+withMod mod { n, cat } =
+    Grade n cat mod
 
 
 fromLinearScale : Float -> Grade

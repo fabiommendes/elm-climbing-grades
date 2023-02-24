@@ -47,14 +47,14 @@ showModSoftHard =
 toLinearScale : Mod -> Float
 toLinearScale mod =
     case mod of
+        Soft ->
+            -0.25
+
         Base ->
             0.0
 
-        Soft ->
-            -0.2
-
         Hard ->
-            0.2
+            0.25
 
         HalfwayNext ->
             0.5
@@ -62,19 +62,22 @@ toLinearScale mod =
 
 fromLinearScale : number -> Float -> ( number, Mod )
 fromLinearScale n x =
-    if x <= -0.2 then
-        ( n, Soft )
+    if x < 0 then
+        fromLinearScale (n - 1) (x + 1)
 
-    else if x <= 0.2 then
+    else if x > 1 then
+        fromLinearScale (n + 1) (x - 1)
+
+    else if x < 0.125 then
         ( n, Base )
 
-    else if x <= 0.4 then
+    else if x < 0.375 then
         ( n, Hard )
 
-    else if x <= 0.6 then
+    else if x < 0.625 then
         ( n, HalfwayNext )
 
-    else if x <= 0.8 then
+    else if x < 0.875 then
         ( n + 1, Soft )
 
     else

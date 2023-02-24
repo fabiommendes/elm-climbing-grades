@@ -21,6 +21,7 @@ The grading API is provided as attributes from specially constructed records.
 
 import Grades.Bouldering as Boulder
 import Grades.Climbing as Climbing
+import Grades.Levels.Mod as Mod
 import Grades.Systems.Br as Br
 import Grades.Systems.Font as Font
 import Grades.Systems.Fr as Fr
@@ -37,6 +38,7 @@ type alias Generic sys grade =
     , parse : String -> Maybe grade
     , parseAs : sys -> String -> Maybe grade
     , simplify : grade -> grade
+    , withMod : Mod.Mod -> grade -> grade
     , next : grade -> grade
     , prev : grade -> grade
     , to : sys -> grade -> grade
@@ -56,6 +58,7 @@ boulder =
     , parse = Boulder.parse
     , parseAs = Boulder.parseAs
     , simplify = Boulder.simplify
+    , withMod = Boulder.withMod
     , next = Boulder.next
     , prev = Boulder.prev
     , to = Boulder.to
@@ -75,6 +78,7 @@ climb =
     , parse = Climbing.parse
     , parseAs = Climbing.parseAs
     , simplify = Climbing.simplify
+    , withMod = Climbing.withMod
     , next = Climbing.next
     , prev = Climbing.prev
     , to = Climbing.to
@@ -94,6 +98,7 @@ us =
     , parse = Us.parse
     , parseAs = \_ -> Us.parse
     , simplify = Us.simplify
+    , withMod = Us.withMod
     , next = Us.next
     , prev = Us.prev
     , to = \_ x -> x
@@ -113,6 +118,7 @@ fr =
     , parse = Fr.parse
     , parseAs = \_ -> Fr.parse
     , simplify = Fr.simplify
+    , withMod = Fr.withMod
     , next = Fr.next
     , prev = Fr.prev
     , to = \_ x -> x
@@ -132,6 +138,7 @@ br =
     , parse = Br.parse
     , parseAs = \_ -> Br.parse
     , simplify = Br.simplify
+    , withMod = Br.withMod
     , next = Br.next
     , prev = Br.prev
     , to = \_ x -> x
@@ -151,6 +158,7 @@ font =
     , parse = Font.parse
     , parseAs = \_ -> Font.parse
     , simplify = Font.simplify
+    , withMod = Font.withMod
     , next = Font.next
     , prev = Font.prev
     , to = \_ x -> x
@@ -170,6 +178,7 @@ vgrade =
     , parse = Hueco.parse
     , parseAs = \_ -> Hueco.parse
     , simplify = Hueco.simplify
+    , withMod = Hueco.withMod
     , next = Hueco.next
     , prev = Hueco.prev
     , to = \_ x -> x

@@ -1,6 +1,7 @@
-module Grades.Levels.ABCPlus exposing (Level(..), next, prev, show, showHalfway, toABC, toLinearScale)
+module Grades.Levels.ABCPlus exposing (Level(..), fromIndex, next, prev, show, showHalfway, toABC, toLinearScale)
 
 import Grades.Levels.ABC as ABC
+import String exposing (fromInt)
 
 
 type Level
@@ -142,3 +143,32 @@ toLinearScale cat =
 
         CPlus ->
             5 / 6
+
+
+fromIndex : Int -> ( Int, Level )
+fromIndex n =
+    case n of
+        0 ->
+            ( 0, A )
+
+        1 ->
+            ( 0, APlus )
+
+        2 ->
+            ( 0, B )
+
+        3 ->
+            ( 0, BPlus )
+
+        4 ->
+            ( 0, C )
+
+        5 ->
+            ( 0, CPlus )
+
+        _ ->
+            if n < 0 then
+                fromIndex (n + 6) |> Tuple.mapFirst ((+) -1)
+
+            else
+                fromIndex (n - 6) |> Tuple.mapFirst ((+) 1)

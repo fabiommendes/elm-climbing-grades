@@ -3,6 +3,10 @@ module TestGradingSystems exposing (..)
 import Expect as E
 import Fuzz exposing (..)
 import Grades.Generic as Grades
+import Grades.Levels.Mod as Mod
+import Grades.Systems.Hueco as Hueco
+import Grades.TestUtil exposing (fullSeqFromZero, seqFromZero)
+import Grades.Util exposing (iterate, seqDecreases)
 import Test exposing (..)
 
 
@@ -21,15 +25,6 @@ sequenceFromZero tt descr spec =
                 seq
 
 
-iterate : (a -> a) -> a -> Int -> List a
-iterate f x n =
-    if n <= 0 then
-        [x]
-
-    else
-        x :: iterate f (f x) (n - 1)
-
-
 suite : Test
 suite =
     describe "zero/next sequences"
@@ -41,28 +36,62 @@ suite =
         ]
 
 
+parsing : Test
+parsing =
+    describe "Hueco.parse"
+        (let
+            parse =
+                Hueco.parse
 
--- [ describe "Hueco.parse"
---     (let
---         example st n =
---             test ("parse " ++ st) <| \_ -> parse st |> E.equal (v n)
---         invalid st =
---             test ("parse " ++ st) <| \_ -> parse st |> E.equal Nothing
---      in
---      [ -- Vermin/Hueco scale
---        example "VB" -1.0
---      , example "V1" 1.0
---      , example "v2" 2.0
---      , example "v10" 10.0
---      , example "V11" 11.0
---      , example "V1+" 1.2
---      , example "V1/2" 1.5
---      , example "V1-" 0.8
---      , invalid "V1/V2"
---      , invalid "1"
---      , invalid "V-1"
---      , invalid "V00"
---      , invalid "V1/3"
---      ]
---     )
--- ]
+            example st n mod =
+                test ("parse " ++ st) <| \_ -> parse st |> E.equal (Just <| Hueco.Grade n mod)
+
+            invalid st =
+                test ("parse " ++ st) <| \_ -> parse st |> E.equal Nothing
+         in
+         [ -- Vermin/Hueco scale
+           example "VB" -1 Mod.Base
+         , example "V1" 1 Mod.Base
+         , example "V2" 2 Mod.Base
+         , example "V10" 10 Mod.Base
+         , example "V11" 11 Mod.Base
+         , example "V1+" 1 Mod.Hard
+         , example "V1/2" 1 Mod.HalfwayNext
+         , example "V1-" 1 Mod.Soft
+         , invalid "V1/V2"
+         , invalid "1"
+         , invalid "V-1"
+         , invalid "V00"
+         , invalid "V1/3"
+         ]
+        )
+
+
+sequences : Test
+sequences =
+    describe "strictly increasing sequences"
+        [ test "Hueco" <| \_ -> seqDecreases Grades.vgrade.toLinearScale (seqFromZero 20 Grades.vgrade) |> E.equal []
+        ]
+
+
+linearScale : Test
+linearScale =
+    let
+        tests : String -> sys -> Grades.Generic sys grade -> List Test
+        tests name sys mod =
+            fullSeqFromZero 20 mod
+                |> List.map
+                    (\g ->
+                        let
+                            n =
+                                mod.toLinearScale g
+                        in
+                        test (name ++ " " ++ mod.show g) <|
+                            \_ -> ( n, mod.fromLinearScale sys n ) |> E.equal ( n, g )
+                    )
+    in
+    describe "linear scale roundtrip" <|
+        List.concat
+            [ tests "Hueco" () Grades.vgrade
+            , tests "Font" () Grades.font
+            ]

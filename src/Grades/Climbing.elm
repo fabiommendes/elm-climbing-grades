@@ -3,6 +3,7 @@ module Grades.Climbing exposing
     , show, showAs, parse, parseAs
     , simplify, next, prev, to
     , zero, compare, toLinearScale, fromLinearScale
+    , withMod
     )
 
 {-| Climbing grades representation and conversion
@@ -36,6 +37,7 @@ Conversions are based on the table
 
 -}
 
+import Grades.Levels.Mod as Mod
 import Grades.Systems.Br as Br
 import Grades.Systems.Fr as Fr
 import Grades.Systems.Us as Us
@@ -127,6 +129,13 @@ parseAs system =
 simplify : Grade -> Grade
 simplify =
     flatmap ( Us.simplify, Fr.simplify, Br.simplify )
+
+
+{-| Set modifiers (soft, hard, etc)
+-}
+withMod : Mod.Mod -> Grade -> Grade
+withMod mod =
+    flatmap ( Us.withMod mod, Fr.withMod mod, Br.withMod mod )
 
 
 {-| Construct grade from numeric value

@@ -1,7 +1,7 @@
 module Grades.Bouldering exposing
     ( Grade, System(..)
     , show, showAs, parse, parseAs
-    , simplify, next, prev, to
+    , simplify, withMod, next, prev, to
     , zero, compare, toLinearScale, fromLinearScale
     )
 
@@ -27,7 +27,7 @@ Conversions are based on the table
 
 ## Transforms
 
-@docs simplify, next, prev, to
+@docs simplify, withMod, next, prev, to
 
 
 ## Ordering and comparisons
@@ -36,6 +36,7 @@ Conversions are based on the table
 
 -}
 
+import Grades.Levels.Mod as Mod
 import Grades.Systems.Font as Font
 import Grades.Systems.Hueco as Hueco
 
@@ -157,6 +158,13 @@ prev =
 simplify : Grade -> Grade
 simplify =
     flatmap ( Hueco.simplify, Font.simplify )
+
+
+{-| Set modifiers (soft, hard, etc)
+-}
+withMod : Mod.Mod -> Grade -> Grade
+withMod mod =
+    flatmap ( Hueco.withMod mod, Font.withMod mod )
 
 
 {-| Convert grade to the given system

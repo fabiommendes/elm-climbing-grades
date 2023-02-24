@@ -1,4 +1,4 @@
-module Grades.Levels.Plus exposing (Level(..), next, prev, show, showHalfWay)
+module Grades.Levels.Plus exposing (Level(..), next, prev, show, showHalfWay, toLinearScale)
 
 
 type Level
@@ -44,3 +44,13 @@ showHalfWay lvl =
 
         Plus ->
             Nothing
+
+
+toLinearScale : Level -> Float
+toLinearScale lvl =
+    case lvl of
+        Base ->
+            0 / 2
+
+        Plus ->
+            1 / 2

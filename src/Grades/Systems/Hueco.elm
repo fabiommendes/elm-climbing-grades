@@ -8,7 +8,7 @@ module Grades.Systems.Hueco exposing
     , show
     , simplify
     , toLinearScale
-    , zero
+    , zero, withMod
     )
 
 import Grades.Levels.Mod as Mod
@@ -16,12 +16,12 @@ import Grades.Parser exposing (vParser)
 import Parser exposing (..)
 
 
-type Grade
-    = Grade Int Mod.Mod
+type alias Grade =
+    { n : Int, mod : Mod.Mod }
 
 
 show : Grade -> String
-show (Grade n mod) =
+show { n, mod } =
     let
         base =
             if n < 0 then
@@ -52,8 +52,13 @@ parse st =
 
 
 simplify : Grade -> Grade
-simplify (Grade n _) =
+simplify { n } =
     Grade n Mod.Base
+
+
+withMod : Mod.Mod -> Grade -> Grade
+withMod mod { n } =
+    Grade n mod
 
 
 {-| Convert to the floating point universal scale
@@ -68,7 +73,7 @@ saving in a database.
 
 -}
 toLinearScale : Grade -> Float
-toLinearScale (Grade n mod) =
+toLinearScale { n, mod } =
     toFloat n + Mod.toLinearScale mod
 
 
@@ -93,22 +98,22 @@ zero =
 
 
 next : Grade -> Grade
-next (Grade n mod) =
+next { n, mod } =
     Grade (n + 1) mod
 
 
 prev : Grade -> Grade
-prev (Grade n mod) =
+prev { n, mod } =
     Grade (n - 1) mod
 
 
 order : Grade -> Grade -> Order
-order (Grade n modn) (Grade m modm) =
-    if n > m then
+order g1 g2 =
+    if g1.n > g2.n then
         GT
 
-    else if n == m then
-        Mod.order modn modm
+    else if g1.n == g1.n then
+        Mod.order g1.mod g2.mod
 
     else
         LT

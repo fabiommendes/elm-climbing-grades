@@ -47,7 +47,7 @@ vParser fn =
     in
     succeed validate
         |. token "V"
-        |= oneOf [ succeed -1 |. symbol "b", int ]
+        |= oneOf [ succeed -1 |. symbol "B", int ]
         |= plusModThen int
         |. end
         |> fromResult
