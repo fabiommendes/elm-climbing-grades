@@ -1,6 +1,7 @@
 module Grades.Systems.Br exposing
     ( Grade
     , fromLinearScale
+    , fromNum
     , next
     , order
     , parse
@@ -8,13 +9,17 @@ module Grades.Systems.Br exposing
     , show
     , simplify
     , toLinearScale
-    , zero, withMod
+    , toNum
+    , withMod
+    , zero
     )
 
 import Grades.Levels.ABC as Lvl
 import Grades.Levels.Mod as Mod
 import Grades.Parser exposing (brParser)
 import Grades.Systems.Common exposing (..)
+import Grades.Systems.Us as Us
+import Grades.Util exposing (piecewise, splitNum)
 import Parser
 import Roman exposing (toRoman)
 
@@ -81,14 +86,89 @@ withMod mod { n, cat } =
     Grade n cat mod
 
 
-fromLinearScale : Float -> Grade
-fromLinearScale _ =
-    zero
-
-
 toLinearScale : Grade -> Float
-toLinearScale _ =
-    0.0
+toLinearScale =
+    toNum >> piecewise 0.75 1.0 ( br1, us3 ) [] ( br8a, us512a )
+
+
+fromLinearScale : Float -> Grade
+fromLinearScale =
+    piecewise (1 / 0.75) 1.0 ( us3, br1 ) [] ( us512a, br8a ) >> fromNum
+
+
+us3 : Float
+us3 =
+    Us.toLinearScale (Us.parse "3" |> Maybe.withDefault Us.zero)
+
+
+us512a : Float
+us512a =
+    Us.toLinearScale (Us.parse "5.12a" |> Maybe.withDefault Us.zero)
+
+
+br8a : Float
+br8a =
+    toNum (Grade 8 Lvl.A Mod.Base)
+
+
+br1 : Float
+br1 =
+    toNum (Grade 1 Lvl.A Mod.Base)
+
+
+toNum : Grade -> Float
+toNum { n, cat, mod } =
+    -- Progression: I Isup II IIsup III IIIsup IV IVsup  V  Vsup  VI  VIsup  7a  7b  7c ...
+    --              1   2   3    4    5     6   7    8   9   10   11    12   13  14  15 ...
+    if n <= 6 then
+        2 * toFloat n - 1 + 3 * Lvl.toLinearScale cat + Mod.toLinearScale mod
+
+    else
+        13 + 3 * toFloat (n - 7) + 3 * Lvl.toLinearScale cat + Mod.toLinearScale mod
+
+
+fromNum : Float -> Grade
+fromNum x =
+    let
+        ( n, delta ) =
+            splitNum x
+    in
+    if n < 13 then
+        let
+            ( incr, mod ) =
+                Mod.fromLinearScale 0 delta
+
+            m =
+                (n - 1) // 2 + 1
+
+            ( lvl, incr_ ) =
+                case ( n - 1 + incr |> modBy 2, incr ) of
+                    ( 0, 1 ) ->
+                        ( Lvl.A, 1 )
+
+                    ( 0, _ ) ->
+                        ( Lvl.A, 0 )
+
+                    ( 1, _ ) ->
+                        ( Lvl.B, 0 )
+
+                    _ ->
+                        ( Lvl.A, 0 )
+        in
+        Grade (m + incr_) lvl mod
+
+    else
+        let
+            ( incr, mod ) =
+                Mod.fromLinearScale 0 delta
+
+            m =
+                (n - 13) // 3 + 7
+
+            ( incr_, lvl ) =
+                Lvl.fromIndex <| ((n - 13) |> modBy 3) + incr
+        in
+        Grade (m + incr_) lvl mod
 
 
 zero : Grade

@@ -2,10 +2,12 @@ module TestBoulders exposing (..)
 
 import Expect as E
 import Fuzz exposing (..)
-import Grades.Generic as Grades exposing (font, vgrade)
+import Grades.Generic as Grades exposing (br, font, fr, us, vgrade)
 import Grades.Levels.ABCPlus as ABCPlus
 import Grades.Levels.Mod as Mod
+import Grades.Systems.Br as Br
 import Grades.Systems.Font as Font
+import Grades.Systems.Fr as Fr
 import Grades.TestUtil exposing (seqFromZero)
 import Grades.Util exposing (trunc, zip)
 import Test exposing (..)
@@ -53,24 +55,25 @@ suite =
             [ expectNumbers "Hueco.toLinearScale" vgrade.toLinearScale vgrade.show (seqFromZero 11 vgrade) [ -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
             , expectNumbers "Font.toNum" Font.toNum Font.show (seqFromZero 9 font) [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
             , expectNumbers "Font.toLinearScale" Font.toLinearScale Font.show (seqFromZero 20 font) [ -1.5, -1, -0.5, 0, 0.64, 1.29, 1.93, 2.57, 3.21, 3.86, 4.5, 5.14, 5.79, 6.43, 7.07, 7.71, 8.36, 9, 10, 11, 12 ]
+            , expectNumbers "Us.toLinearScale" us.toLinearScale us.show (seqFromZero 20 us) [ -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 ]
+            , expectNumbers "Fr.toNum" Fr.toNum Fr.show (seqFromZero 20 fr) [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21 ]
+            , expectNumbers "Br.toNum" Br.toNum Br.show (seqFromZero 20 br) [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21 ]
             ]
         , describe "Roundtrips" <|
             [ numericRoundtripExt "Font.num" Font.toNum Font.fromNum font.show (seqFromZero 20 font)
-            , numericRoundtrip "Hueco.linearScale" vgrade () (seqFromZero 15 vgrade)
+            , numericRoundtripExt "Fr.num" Fr.toNum Fr.fromNum fr.show (seqFromZero 20 fr)
+            , numericRoundtripExt "Br.num" Br.toNum Br.fromNum br.show (seqFromZero 20 br)
             , numericRoundtrip "Font.linearScale" font () (seqFromZero 15 font)
+            , numericRoundtrip "Hueco.linearScale" vgrade () (seqFromZero 15 vgrade)
+            , numericRoundtrip "Us.linearScale" us () (seqFromZero 20 us)
+            , numericRoundtrip "Fr.linearScale" fr () (seqFromZero 20 fr)
+            , numericRoundtrip "Br.linearScale" br () (seqFromZero 20 br)
             ]
         ]
 
 
 regressions : Test
 regressions =
-    let
-        fst =
-            Tuple.first
-
-        snd =
-            Tuple.second
-    in
     describe "Regressions" <|
         [ test "Font soft" <|
             \_ ->

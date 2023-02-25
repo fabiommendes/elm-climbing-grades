@@ -3,6 +3,7 @@ module Grades.Systems.Us exposing (Grade, fromLinearScale, next, order, parse, p
 import Grades.Levels.ABCD as Lvl
 import Grades.Levels.Mod as Mod
 import Grades.Parser exposing (usParser)
+import Grades.Util exposing (splitNum)
 import Parser
 
 
@@ -47,13 +48,41 @@ withMod mod { n, cat } =
 
 
 fromLinearScale : Float -> Grade
-fromLinearScale _ =
-    zero
+fromLinearScale x =
+    let
+        ( n, delta ) =
+            splitNum x
+    in
+    if n < 10 then
+        let
+            ( incr, mod ) =
+                Mod.fromLinearScale 0 delta
+        in
+        Grade (n + incr) Lvl.A mod
+
+    else
+        let
+            ( incr, mod ) =
+                Mod.fromLinearScale 0 delta
+
+            m =
+                (n - 10) // 4 + 10
+
+            ( incr_, lvl ) =
+                Lvl.fromIndex <| ((n - 10) |> modBy 4) + incr
+        in
+        Grade (m + incr_) lvl mod
 
 
 toLinearScale : Grade -> Float
-toLinearScale _ =
-    0.0
+toLinearScale { n, mod, cat } =
+    -- Grades  1  2  3  4 5.0  5.1  5.2  5.3 ... 5.9  5.10a 5.10b ...
+    -- Nums   -4 -3 -2 -1   0    1    2    3       9     10    11 ...
+    if n < 10 then
+        toFloat n + Mod.toLinearScale mod
+
+    else
+        4 * (toFloat n - 10) + 10 + Mod.toLinearScale mod + 4 * Lvl.toLinearScale cat
 
 
 zero : Grade

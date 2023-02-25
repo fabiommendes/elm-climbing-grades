@@ -1,4 +1,4 @@
-module Grades.Levels.ABCD exposing (Level(..), next, prev, show, showHalfway, toLinearScale)
+module Grades.Levels.ABCD exposing (Level(..), next, prev, show, showHalfway, toLinearScale, fromIndex)
 
 
 type Level
@@ -86,3 +86,26 @@ toLinearScale lvl =
 
         D ->
             3 / 4
+
+
+fromIndex : Int -> ( Int, Level )
+fromIndex n =
+    case n of
+        0 ->
+            ( 0, A )
+
+        1 ->
+            ( 0, B )
+
+        2 ->
+            ( 0, C )
+
+        3 ->
+            ( 0, D )
+
+        _ ->
+            if n < 0 then
+                fromIndex (n + 4) |> Tuple.mapFirst ((+) -1)
+
+            else
+                fromIndex (n - 4) |> Tuple.mapFirst ((+) 1)

@@ -1,7 +1,6 @@
-module Grades.Levels.ABCPlus exposing (Level(..), fromIndex, next, prev, show, showHalfway, toABC, toLinearScale)
+module Grades.Levels.ABCPlus exposing (Level(..), fromIndex, next, prev, show, showHalfway, toABC, toLinearScale, fromABC)
 
 import Grades.Levels.ABC as ABC
-import String exposing (fromInt)
 
 
 type Level
@@ -77,6 +76,19 @@ toABC lvl =
 
         CPlus ->
             ABC.C
+
+
+fromABC : ABC.Level -> Level
+fromABC lvl =
+    case lvl of
+        ABC.A ->
+            A
+
+        ABC.B ->
+            B
+
+        ABC.C ->
+            C
 
 
 show : Level -> String
