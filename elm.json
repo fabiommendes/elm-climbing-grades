@@ -3,7 +3,7 @@
     "name": "fabiommendes/elm-climbing-grades",
     "summary": "Climbing grades parsing and manipulation in Elm",
     "license": "BSD-3-Clause",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "exposed-modules": [
         "Grades.Bouldering",
         "Grades.Climbing",
