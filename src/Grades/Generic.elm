@@ -49,6 +49,36 @@ type alias Generic sys grade =
     }
 
 
+type alias GenericBase sys grade =
+    { show : grade -> String
+    , showAs : sys -> grade -> String
+    , parse : String -> Maybe grade
+    , parseAs : sys -> String -> Maybe grade
+    , to : sys -> grade -> grade
+    , zero : grade
+    , toLinearScale : grade -> Float
+    , fromLinearScale : sys -> Float -> grade
+    }
+
+
+generic : GenericBase sys Float -> Generic sys Float
+generic { show, showAs, parse, parseAs, to, zero, toLinearScale, fromLinearScale } =
+    { show = show
+    , showAs = showAs
+    , parse = parse
+    , parseAs = parseAs
+    , to = to
+    , zero = zero
+    , toLinearScale = toLinearScale
+    , fromLinearScale = fromLinearScale
+    , simplify = Mod.toBase
+    , withMod = \mod -> Mod.toBase >> (+) (Mod.toLinearScale mod)
+    , next = (+) 1
+    , prev = (+) -1
+    , compare = compare
+    }
+
+
 {-| Generic bouldering grades
 -}
 boulder : Generic Boulder.System Boulder.Grade
@@ -153,37 +183,29 @@ br =
 -}
 font : Generic () Font.Grade
 font =
-    { show = Font.show
-    , showAs = \_ -> Font.show
-    , parse = Font.parse
-    , parseAs = \_ -> Font.parse
-    , simplify = Font.simplify
-    , withMod = Font.withMod
-    , next = Font.next
-    , prev = Font.prev
-    , to = \_ x -> x
-    , zero = Font.zero
-    , compare = Font.order
-    , toLinearScale = Font.toLinearScale
-    , fromLinearScale = \_ -> Font.fromLinearScale
-    }
+    generic
+        { show = Font.show
+        , showAs = \_ -> Font.show
+        , parse = Font.parse
+        , parseAs = \_ -> Font.parse
+        , to = \_ x -> x
+        , zero = Font.zero
+        , toLinearScale = Font.toLinearScale
+        , fromLinearScale = \_ -> Font.fromLinearScale
+        }
 
 
 {-| Hueco V-grades system
 -}
 vgrade : Generic () Hueco.Grade
 vgrade =
-    { show = Hueco.show
-    , showAs = \_ -> Hueco.show
-    , parse = Hueco.parse
-    , parseAs = \_ -> Hueco.parse
-    , simplify = Hueco.simplify
-    , withMod = Hueco.withMod
-    , next = Hueco.next
-    , prev = Hueco.prev
-    , to = \_ x -> x
-    , zero = Hueco.zero
-    , compare = Hueco.order
-    , toLinearScale = Hueco.toLinearScale
-    , fromLinearScale = \_ -> Hueco.fromLinearScale
-    }
+    generic
+        { show = Hueco.show
+        , showAs = \_ -> Hueco.show
+        , parse = Hueco.parse
+        , parseAs = \_ -> Hueco.parse
+        , to = \_ x -> x
+        , zero = Hueco.zero
+        , toLinearScale = identity
+        , fromLinearScale = \_ -> identity
+        }

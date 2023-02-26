@@ -1,16 +1,11 @@
 module Grades.Systems.Font exposing
     ( Grade
     , fromLinearScale
-    , fromNum
-    , next
-    , order
+    , grade
     , parse
-    , prev
     , show
-    , simplify
+    , split
     , toLinearScale
-    , toNum
-    , withMod
     , zero
     )
 
@@ -20,78 +15,22 @@ import Grades.Levels.Mod as Mod
 import Grades.Parser exposing (fontParser)
 import Grades.Systems.Common exposing (..)
 import Grades.Systems.Hueco as Hueco
-import Grades.Util exposing (piecewise, splitNum)
+import Grades.Util exposing (flip, piecewise, splitNum)
 import Parser
 
 
+{-| Internal numeric representation of grade progression
+
+    Progression: 1 2 3 4 4+ 5  5+ 6a 6a+ 6b 6b+ 6c 6c+ 7a ...
+                 1 2 3 4 5  6  7   8  9  10 11  12 13  14 ...
+
+-}
 type alias Grade =
-    { n : Int
-    , cat : Lvl.Level
-    , mod : Mod.Mod
-    }
+    Float
 
 
-show : Grade -> String
-show grade =
-    if grade.n <= 3 then
-        showFrNumber show simplify next grade
-
-    else if grade.n <= 5 then
-        showFrPlus show simplify next grade
-
-    else
-        showFrFull show simplify next grade
-
-
-parse : String -> Maybe Grade
-parse st =
-    st
-        |> Parser.run (fontParser Grade)
-        |> Result.toMaybe
-
-
-simplify : Grade -> Grade
-simplify { n, cat } =
-    Grade n cat Mod.Base
-
-
-withMod : Mod.Mod -> Grade -> Grade
-withMod mod { n, cat } =
-    Grade n cat mod
-
-
-toLinearScale : Grade -> Float
-toLinearScale =
-    toNum >> piecewise 0.5 1.0 ( font4, v0 ) [] ( font7c, v9 )
-
-
-fromLinearScale : Float -> Grade
-fromLinearScale =
-    piecewise 2.0 1.0 ( v0, font4 ) [] ( v9, font7c ) >> fromNum
-
-
-v0 : Float
-v0 =
-    Hueco.toLinearScale (Hueco.Grade 0 Mod.Base)
-
-
-v9 : Float
-v9 =
-    Hueco.toLinearScale (Hueco.Grade 9 Mod.Base)
-
-
-font4 : Float
-font4 =
-    toNum (Grade 4 Lvl.A Mod.Base)
-
-
-font7c : Float
-font7c =
-    toNum (Grade 7 Lvl.C Mod.Base)
-
-
-toNum : Grade -> Float
-toNum { n, cat, mod } =
+grade : Int -> Lvl.Level -> Mod.Mod -> Grade
+grade n cat mod =
     if n <= 3 then
         toFloat n + Mod.toLinearScale mod
 
@@ -102,10 +41,8 @@ toNum { n, cat, mod } =
         8 + 6 * toFloat (n - 6) + Lvl.toLinearScale cat * 6 + Mod.toLinearScale mod
 
 
-fromNum : Float -> Grade
-fromNum x =
-    -- Progression: 1  2  3  4  4+ 5  5+ 6a  6a+ 6b  6b+ 6c  6c+ 7a ...
-    --              1  2  3  4  5  6  7  8   9   10  11  12  13  14 ...
+split : Float -> { n : Int, cat : Lvl.Level, mod : Mod.Mod }
+split x =
     let
         ( n, delta ) =
             splitNum x
@@ -115,7 +52,7 @@ fromNum x =
             ( m, mod ) =
                 Mod.fromLinearScale n delta
         in
-        Grade m Lvl.A mod
+        { n = m, cat = Lvl.A, mod = mod }
 
     else if n < 8 then
         let
@@ -139,7 +76,7 @@ fromNum x =
                     _ ->
                         ( Lvl.C, 0 )
         in
-        Grade (m + incr_) lvl mod
+        { n = m + incr_, cat = lvl, mod = mod }
 
     else
         let
@@ -152,58 +89,68 @@ fromNum x =
             ( incr_, lvl ) =
                 Lvl.fromIndex <| ((n - 8) |> modBy 6) + incr
         in
-        Grade (m + incr_) lvl mod
+        { n = m + incr_, cat = lvl, mod = mod }
+
+
+unsplit : { a | n : Int, cat : Lvl.Level, mod : Mod.Mod } -> Grade
+unsplit { n, cat, mod } =
+    grade n cat mod
+
+
+show : Grade -> String
+show x =
+    if x <= Mod.halfwayNext 3 then
+        showFrNumber (show << unsplit) (unsplit >> Mod.toBase >> split) (unsplit >> (+) 1 >> split) (split x)
+
+    else if x <= Mod.halfwayNext 7 then
+        showFrPlus (show << unsplit) (unsplit >> Mod.toBase >> split) (unsplit >> (+) 1 >> split) (split x)
+
+    else
+        showFrFull (show << unsplit) (unsplit >> Mod.toBase >> split) (unsplit >> (+) 1 >> split) (split x)
+
+
+parse : String -> Maybe Grade
+parse st =
+    st
+        |> Parser.run (fontParser grade)
+        |> Result.toMaybe
+
+
+normalizeNum : Float -> Float
+normalizeNum =
+    (*) 10000 >> round >> toFloat >> flip (/) 10000
+
+
+toLinearScale : Grade -> Float
+toLinearScale =
+    piecewise 0.5 1.0 ( font4, v0 ) [] ( font7c, v9 )
+
+
+fromLinearScale : Float -> Grade
+fromLinearScale =
+    piecewise 2.0 1.0 ( v0, font4 ) [] ( v9, font7c ) >> normalizeNum
+
+
+v0 : Float
+v0 =
+    Hueco.grade 0 Mod.Base
+
+
+v9 : Float
+v9 =
+    Hueco.grade 9 Mod.Base
+
+
+font4 : Float
+font4 =
+    grade 4 Lvl.A Mod.Base
+
+
+font7c : Float
+font7c =
+    grade 7 Lvl.C Mod.Base
 
 
 zero : Grade
 zero =
-    { n = 1, cat = Lvl.A, mod = Mod.Base }
-
-
-next : Grade -> Grade
-next { n, cat, mod } =
-    if n <= 3 then
-        Grade (n + 1) Lvl.A mod
-
-    else if n <= 5 && Lvl.toABC cat == ABC.A then
-        Grade n Lvl.B mod
-
-    else if n <= 5 then
-        Grade (n + 1) Lvl.A mod
-
-    else
-        case Lvl.next cat of
-            Just lvl ->
-                Grade n lvl mod
-
-            Nothing ->
-                Grade (n + 1) Lvl.A mod
-
-
-prev : Grade -> Grade
-prev { n, cat, mod } =
-    if n <= 3 then
-        Grade (n - 1) Lvl.A mod
-
-    else if n <= 5 && Lvl.toABC cat /= ABC.A then
-        Grade n Lvl.A mod
-
-    else if n <= 5 then
-        Grade (n - 1) Lvl.B mod
-
-    else
-        case Lvl.prev cat of
-            Just lvl ->
-                Grade n lvl mod
-
-            Nothing ->
-                Grade (n - 1) Lvl.CPlus mod
-
-
-order : Grade -> Grade -> Order
-order a b =
-    let
-        toTuple { n, cat, mod } =
-            ( n, Lvl.toLinearScale cat, Mod.toLinearScale mod )
-    in
-    compare (toTuple a) (toTuple b)
+    grade 1 Lvl.A Mod.Base

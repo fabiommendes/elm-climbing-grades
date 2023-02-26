@@ -44,7 +44,7 @@ parsing =
                 Hueco.parse
 
             example st n mod =
-                test ("parse " ++ st) <| \_ -> parse st |> E.equal (Just <| Hueco.Grade n mod)
+                test ("parse " ++ st) <| \_ -> parse st |> E.equal (Just <| Hueco.grade n mod)
 
             invalid st =
                 test ("parse " ++ st) <| \_ -> parse st |> E.equal Nothing

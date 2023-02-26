@@ -44,8 +44,8 @@ import Grades.Systems.Hueco as Hueco
 {-| Represents a bouldering grade
 -}
 type Grade
-    = Hueco Hueco.Grade
-    | Font Font.Grade
+    = Hueco Float
+    | Font Float
 
 
 {-| A bouldering grade system
@@ -59,7 +59,7 @@ type System
 -}
 show : Grade -> String
 show =
-    map ( Hueco.show, Font.show )
+    unwrap ( Hueco.show, Font.show )
 
 
 {-| Render grade using some grading system
@@ -98,10 +98,10 @@ compare : Grade -> Grade -> Order
 compare a b =
     case ( a, b ) of
         ( Hueco x, Hueco y ) ->
-            Hueco.order x y
+            Basics.compare x y
 
         ( Font x, Font y ) ->
-            Font.order x y
+            Basics.compare x y
 
         _ ->
             Basics.compare (toLinearScale a) (toLinearScale b)
@@ -113,7 +113,7 @@ fromLinearScale : System -> Float -> Grade
 fromLinearScale system x =
     case system of
         VGrade ->
-            Hueco (Hueco.fromLinearScale x)
+            Hueco x
 
         Fontainbleau ->
             Font (Font.fromLinearScale x)
@@ -123,7 +123,7 @@ fromLinearScale system x =
 -}
 toLinearScale : Grade -> Float
 toLinearScale =
-    map ( Hueco.toLinearScale, Font.toLinearScale )
+    unwrap ( identity, Font.toLinearScale )
 
 
 {-| Smallest possible grade
@@ -140,7 +140,7 @@ This ignores modifiers and some intermediate levels.
 -}
 next : Grade -> Grade
 next =
-    flatmap ( Hueco.next, Font.next )
+    map ((+) 1)
 
 
 {-| Previous discrete grade in the current grading system.
@@ -150,21 +150,21 @@ This ignores modifiers and some intermediate levels.
 -}
 prev : Grade -> Grade
 prev =
-    flatmap ( Hueco.prev, Font.prev )
+    map ((-) 1)
 
 
 {-| Remove modifiers (soft, hard, etc) from grade
 -}
 simplify : Grade -> Grade
 simplify =
-    flatmap ( Hueco.simplify, Font.simplify )
+    map Mod.toBase
 
 
 {-| Set modifiers (soft, hard, etc)
 -}
 withMod : Mod.Mod -> Grade -> Grade
 withMod mod =
-    flatmap ( Hueco.withMod mod, Font.withMod mod )
+    map (Mod.toBase >> (+) (Mod.toLinearScale mod))
 
 
 {-| Convert grade to the given system
@@ -182,8 +182,8 @@ to system grade =
             toLinearScale grade |> fromLinearScale system
 
 
-map : ( Hueco.Grade -> a, Font.Grade -> a ) -> Grade -> a
-map ( f, g ) grade =
+unwrap : ( Hueco.Grade -> a, Font.Grade -> a ) -> Grade -> a
+unwrap ( f, g ) grade =
     case grade of
         Hueco x ->
             f x
@@ -192,11 +192,11 @@ map ( f, g ) grade =
             g x
 
 
-flatmap : ( Hueco.Grade -> Hueco.Grade, Font.Grade -> Font.Grade ) -> Grade -> Grade
-flatmap ( f, g ) grade =
+map : (Float -> Float) -> Grade -> Grade
+map f grade =
     case grade of
         Hueco x ->
             Hueco (f x)
 
         Font x ->
-            Font (g x)
+            Font (f x)
