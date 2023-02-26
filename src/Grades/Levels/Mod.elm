@@ -1,4 +1,4 @@
-module Grades.Levels.Mod exposing (Mod(..), base, fromFloat, fromLinearScale, halfwayNext, hard, order, show, showExt, showModSoftHard, soft, toBase, toLinearScale)
+module Grades.Levels.Mod exposing (Mod(..), base, fromFloat, fromLinearScale, halfwayNext, hard, order, showModSoftHard, showPlusMinus, soft, toBase, toLinearScale, toMod)
 
 {-| Sub-levels and categories inside a given grade class.
 
@@ -32,6 +32,11 @@ type Mod
 toBase : Float -> Float
 toBase x =
     floor (x + 0.375) |> toFloat
+
+
+toMod : Mod -> Float -> Float
+toMod mod x =
+    toBase x + toLinearScale mod
 
 
 soft : Int -> Float
@@ -75,8 +80,8 @@ showExt mods mod =
             Nothing
 
 
-show : Mod -> Maybe String
-show =
+showPlusMinus : Mod -> Maybe String
+showPlusMinus =
     showExt ( "-", "+" )
 
 

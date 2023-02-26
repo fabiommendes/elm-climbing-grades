@@ -113,3 +113,8 @@ splitNum x =
             floor x
     in
     ( n, x - toFloat n )
+
+
+normalizeNum : Float -> Float
+normalizeNum =
+    (*) 10000 >> round >> toFloat >> flip (/) 10000

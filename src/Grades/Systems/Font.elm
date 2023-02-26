@@ -15,14 +15,14 @@ import Grades.Levels.Mod as Mod
 import Grades.Parser exposing (fontParser)
 import Grades.Systems.Common exposing (..)
 import Grades.Systems.Hueco as Hueco
-import Grades.Util exposing (flip, piecewise, splitNum)
+import Grades.Util exposing (normalizeNum, piecewise, splitNum)
 import Parser
 
 
-{-| Internal numeric representation of grade progression
+{-| Numeric representation of grade progression
 
-    Progression: 1 2 3 4 4+ 5  5+ 6a 6a+ 6b 6b+ 6c 6c+ 7a ...
-                 1 2 3 4 5  6  7   8  9  10 11  12 13  14 ...
+    Progression: 1  2  3  4  4+ 5  5+ 6a  6a+  6b  6b+  6c  6c+  7a ...
+                 1  2  3  4  5  6  7   8   9   10  11   12  13   14 ...
 
 -}
 type alias Grade =
@@ -92,21 +92,16 @@ split x =
         { n = m + incr_, cat = lvl, mod = mod }
 
 
-unsplit : { a | n : Int, cat : Lvl.Level, mod : Mod.Mod } -> Grade
-unsplit { n, cat, mod } =
-    grade n cat mod
-
-
 show : Grade -> String
 show x =
     if x <= Mod.halfwayNext 3 then
-        showFrNumber (show << unsplit) (unsplit >> Mod.toBase >> split) (unsplit >> (+) 1 >> split) (split x)
+        showFrNumber show split x
 
     else if x <= Mod.halfwayNext 7 then
-        showFrPlus (show << unsplit) (unsplit >> Mod.toBase >> split) (unsplit >> (+) 1 >> split) (split x)
+        showFrPlus show split x
 
     else
-        showFrFull (show << unsplit) (unsplit >> Mod.toBase >> split) (unsplit >> (+) 1 >> split) (split x)
+        showFrFull show split x
 
 
 parse : String -> Maybe Grade
@@ -114,11 +109,6 @@ parse st =
     st
         |> Parser.run (fontParser grade)
         |> Result.toMaybe
-
-
-normalizeNum : Float -> Float
-normalizeNum =
-    (*) 10000 >> round >> toFloat >> flip (/) 10000
 
 
 toLinearScale : Grade -> Float

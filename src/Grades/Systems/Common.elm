@@ -10,7 +10,7 @@ module Grades.Systems.Common exposing
 
 import Grades.Levels.ABC as ABC
 import Grades.Levels.ABCPlus as ABCPlus
-import Grades.Levels.Mod exposing (Mod, showModSoftHard)
+import Grades.Levels.Mod exposing (Mod, showModSoftHard, toBase)
 
 
 select : Bool -> c -> c -> c
@@ -22,76 +22,96 @@ select cond a b =
         b
 
 
-type alias FrGrade a =
-    { a | mod : Mod, n : Int, cat : ABCPlus.Level }
+type alias FrGrade =
+    { n : Int, cat : ABCPlus.Level, mod : Mod }
 
 
-type alias ShowFunc a =
-    (a -> String) -> (a -> a) -> (a -> a) -> a -> String
+type alias ShowFunc =
+    (Float -> String) -> (Float -> FrGrade) -> Float -> String
 
 
 {-| Show only number from french system, .e.g. "3"
 -}
-showFrNumber : ShowFunc (FrGrade a)
-showFrNumber show simplify next g =
-    case showModSoftHard g.mod of
+showFrNumber : ShowFunc
+showFrNumber show split g =
+    let
+        { n, mod } =
+            split g
+    in
+    case showModSoftHard mod of
         Just suffix ->
-            String.fromInt g.n ++ suffix
+            String.fromInt n ++ suffix
 
         Nothing ->
-            String.fromInt g.n ++ "/" ++ show (g |> simplify |> next)
+            String.fromInt n ++ "/" ++ show (g |> toBase |> next)
 
 
 {-| Show only number and optional + modifier from french system, .e.g. "4+"
 -}
-showFrPlus : ShowFunc (FrGrade a)
-showFrPlus show simplify next g =
-    case showModSoftHard g.mod of
+showFrPlus : ShowFunc
+showFrPlus show split g =
+    let
+        { n, cat, mod } =
+            split g
+    in
+    case showModSoftHard mod of
         Just suffix ->
-            String.fromInt g.n ++ select (ABCPlus.toABC g.cat == ABC.A) "" "+" ++ suffix
+            String.fromInt n ++ select (ABCPlus.toABC cat == ABC.A) "" "+" ++ suffix
 
         Nothing ->
-            case ABCPlus.showHalfway g.cat of
+            case ABCPlus.showHalfway cat of
                 Just suffix ->
-                    String.fromInt g.n ++ suffix
+                    String.fromInt n ++ suffix
 
                 Nothing ->
-                    show (g |> simplify) ++ "/" ++ show (g |> simplify |> next)
+                    show (g |> toBase) ++ "/" ++ show (g |> toBase |> next)
 
 
 {-| Show only number and category (a, b, c) from french system, , .e.g. "6a"
 -}
-showFrCat : ShowFunc (FrGrade a)
-showFrCat show simplify next g =
+showFrCat : ShowFunc
+showFrCat show split g =
     let
-        cat =
-            ABCPlus.toABC g.cat
+        { n, cat, mod } =
+            split g
+
+        cat_ =
+            ABCPlus.toABC cat
     in
-    case showModSoftHard g.mod of
+    case showModSoftHard mod of
         Just suffix ->
-            String.fromInt g.n ++ ABC.show cat ++ suffix
+            String.fromInt n ++ ABC.show cat_ ++ suffix
 
         Nothing ->
-            case ABC.showHalfway cat of
+            case ABC.showHalfway cat_ of
                 Just suffix ->
-                    String.fromInt g.n ++ suffix
+                    String.fromInt n ++ suffix
 
                 Nothing ->
-                    show (g |> simplify) ++ "/" ++ show (g |> simplify |> next)
+                    show (g |> toBase) ++ "/" ++ show (g |> toBase |> next)
 
 
 {-| Show full grade from french system, , .e.g. "8b+"
 -}
-showFrFull : ShowFunc (FrGrade a)
-showFrFull show simplify next g =
-    case showModSoftHard g.mod of
+showFrFull : ShowFunc
+showFrFull show split g =
+    let
+        { n, cat, mod } =
+            split g
+    in
+    case showModSoftHard mod of
         Just suffix ->
-            String.fromInt g.n ++ ABCPlus.show g.cat ++ suffix
+            String.fromInt n ++ ABCPlus.show cat ++ suffix
 
         Nothing ->
-            case ABCPlus.showHalfway g.cat of
+            case ABCPlus.showHalfway cat of
                 Just suffix ->
-                    String.fromInt g.n ++ suffix
+                    String.fromInt n ++ suffix
 
                 Nothing ->
-                    show (g |> simplify) ++ "/" ++ show (g |> simplify |> next)
+                    show (g |> toBase) ++ "/" ++ show (g |> toBase |> next)
+
+
+next : number -> number
+next =
+    (+) 1

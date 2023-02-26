@@ -11,6 +11,12 @@ import Grades.Parser exposing (vParser)
 import Parser exposing (..)
 
 
+{-| Numeric representation of grade progression
+
+    Progression: VB  V0  V1  V2  V3...
+                 -1   0   1   2   3...
+
+-}
 type alias Grade =
     Float
 

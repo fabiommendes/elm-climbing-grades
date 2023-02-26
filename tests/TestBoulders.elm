@@ -8,21 +8,26 @@ import Grades.Levels.Mod as Mod
 import Grades.Systems.Br as Br
 import Grades.Systems.Font as Font
 import Grades.Systems.Fr as Fr
+import Grades.Systems.Hueco as Hueco
+import Grades.Systems.Us as Us
 import Grades.TestUtil exposing (seqFromZero)
-import Grades.Util exposing (trunc, zip)
+import Grades.Util exposing (zip)
 import Test exposing (..)
 
 
-expectNumbers : String -> (a -> Float) -> (a -> String) -> List a -> List Float -> Test
-expectNumbers name toNum toStr values expect =
+expectNumbers : String -> (Float -> String) -> List Float -> ( Int, Int ) -> Test
+expectNumbers name toStr values ( start, end ) =
     let
         names =
             List.map toStr values
 
         named =
             zip names
+
+        expect =
+            List.range start end |> List.map toFloat
     in
-    test name <| \_ -> E.equalLists (named expect) (named <| List.map (toNum >> trunc) values)
+    test name <| \_ -> E.equalLists (named expect) (named values)
 
 
 numericRoundtripExt : String -> (a -> Float) -> (Float -> a) -> (a -> String) -> List a -> Test
@@ -52,16 +57,14 @@ suite : Test
 suite =
     describe "Numeric" <|
         [ describe "Conversions" <|
-            [ expectNumbers "Hueco.toLinearScale" vgrade.toLinearScale vgrade.show (seqFromZero 11 vgrade) [ -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
-            , expectNumbers "Font.toLinearScale" Font.toLinearScale Font.show (seqFromZero 20 font) [ -1.5, -1, -0.5, 0, 0.64, 1.29, 1.93, 2.57, 3.21, 3.86, 4.5, 5.14, 5.79, 6.43, 7.07, 7.71, 8.36, 9, 10, 11, 12 ]
-            , expectNumbers "Us.toLinearScale" us.toLinearScale us.show (seqFromZero 20 us) [ -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 ]
-            , expectNumbers "Fr.toNum" Fr.toNum Fr.show (seqFromZero 20 fr) [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21 ]
-            , expectNumbers "Br.toNum" Br.toNum Br.show (seqFromZero 20 br) [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21 ]
+            [ expectNumbers "Hueco" Hueco.show (seqFromZero 20 vgrade) ( -1, 19 )
+            , expectNumbers "Font" Font.show (seqFromZero 20 font) ( 1, 21 )
+            , expectNumbers "Us" Us.show (seqFromZero 20 us) ( -4, 16 )
+            , expectNumbers "Fr" Fr.show (seqFromZero 20 fr) ( 1, 21 )
+            , expectNumbers "Br" Br.show (seqFromZero 20 br) ( 1, 21 )
             ]
         , describe "Roundtrips" <|
-            [ numericRoundtripExt "Fr.num" Fr.toNum Fr.fromNum fr.show (seqFromZero 20 fr)
-            , numericRoundtripExt "Br.num" Br.toNum Br.fromNum br.show (seqFromZero 20 br)
-            , numericRoundtrip "Font.linearScale" font () (seqFromZero 15 font)
+            [ numericRoundtrip "Font.linearScale" font () (seqFromZero 15 font)
             , numericRoundtrip "Hueco.linearScale" vgrade () (seqFromZero 15 vgrade)
             , numericRoundtrip "Us.linearScale" us () (seqFromZero 20 us)
             , numericRoundtrip "Fr.linearScale" fr () (seqFromZero 20 fr)

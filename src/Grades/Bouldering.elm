@@ -164,7 +164,7 @@ simplify =
 -}
 withMod : Mod.Mod -> Grade -> Grade
 withMod mod =
-    map (Mod.toBase >> (+) (Mod.toLinearScale mod))
+    map (Mod.toMod mod)
 
 
 {-| Convert grade to the given system

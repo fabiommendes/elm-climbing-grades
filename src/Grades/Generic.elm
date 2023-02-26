@@ -1,6 +1,7 @@
 module Grades.Generic exposing
     ( Generic, boulder, climb
     , br, font, fr, us, vgrade
+    , yds
     )
 
 {-| Abstracts the Bouldering vs. Climbing grades.
@@ -123,60 +124,55 @@ climb =
 -}
 us : Generic () Us.Grade
 us =
-    { show = Us.show
-    , showAs = \_ -> Us.show
-    , parse = Us.parse
-    , parseAs = \_ -> Us.parse
-    , simplify = Us.simplify
-    , withMod = Us.withMod
-    , next = Us.next
-    , prev = Us.prev
-    , to = \_ x -> x
-    , zero = Us.zero
-    , compare = Us.order
-    , toLinearScale = Us.toLinearScale
-    , fromLinearScale = \_ -> Us.fromLinearScale
-    }
+    generic
+        { show = Us.show
+        , showAs = \_ -> Us.show
+        , parse = Us.parse
+        , parseAs = \_ -> Us.parse
+        , to = \_ x -> x
+        , zero = Us.zero
+        , toLinearScale = identity
+        , fromLinearScale = \_ -> identity
+        }
+
+
+{-| Yosemite decimal grading system. An alias to `us`
+-}
+yds : Generic () Us.Grade
+yds =
+    us
 
 
 {-| French grading system
 -}
 fr : Generic () Fr.Grade
 fr =
-    { show = Fr.show
-    , showAs = \_ -> Fr.show
-    , parse = Fr.parse
-    , parseAs = \_ -> Fr.parse
-    , simplify = Fr.simplify
-    , withMod = Fr.withMod
-    , next = Fr.next
-    , prev = Fr.prev
-    , to = \_ x -> x
-    , zero = Fr.zero
-    , compare = Fr.order
-    , toLinearScale = Fr.toLinearScale
-    , fromLinearScale = \_ -> Fr.fromLinearScale
-    }
+    generic
+        { show = Fr.show
+        , showAs = \_ -> Fr.show
+        , parse = Fr.parse
+        , parseAs = \_ -> Fr.parse
+        , to = \_ x -> x
+        , zero = Fr.zero
+        , toLinearScale = Fr.toLinearScale
+        , fromLinearScale = \_ -> Fr.fromLinearScale
+        }
 
 
 {-| Brazilian grading system
 -}
 br : Generic () Br.Grade
 br =
-    { show = Br.show
-    , showAs = \_ -> Br.show
-    , parse = Br.parse
-    , parseAs = \_ -> Br.parse
-    , simplify = Br.simplify
-    , withMod = Br.withMod
-    , next = Br.next
-    , prev = Br.prev
-    , to = \_ x -> x
-    , zero = Br.zero
-    , compare = Br.order
-    , toLinearScale = Br.toLinearScale
-    , fromLinearScale = \_ -> Br.fromLinearScale
-    }
+    generic
+        { show = Br.show
+        , showAs = \_ -> Br.show
+        , parse = Br.parse
+        , parseAs = \_ -> Br.parse
+        , to = \_ x -> x
+        , zero = Br.zero
+        , toLinearScale = Br.toLinearScale
+        , fromLinearScale = \_ -> Br.fromLinearScale
+        }
 
 
 {-| Fontainebleau grading system

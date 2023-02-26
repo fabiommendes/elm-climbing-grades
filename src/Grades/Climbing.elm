@@ -62,7 +62,7 @@ type System
 -}
 show : Grade -> String
 show =
-    map
+    unwrap
         ( Us.show
         , Fr.show
         , Br.show >> (\x -> x ++ " BR")
@@ -127,14 +127,14 @@ parseAs system =
 -}
 simplify : Grade -> Grade
 simplify =
-    flatmap ( Us.simplify, Fr.simplify, Br.simplify )
+    map Mod.toBase
 
 
 {-| Set modifiers (soft, hard, etc)
 -}
 withMod : Mod.Mod -> Grade -> Grade
 withMod mod =
-    flatmap ( Us.withMod mod, Fr.withMod mod, Br.withMod mod )
+    map (Mod.toMod mod)
 
 
 {-| Construct grade from numeric value
@@ -143,7 +143,7 @@ fromLinearScale : System -> Float -> Grade
 fromLinearScale system x =
     case system of
         US ->
-            Us (Us.fromLinearScale x)
+            Us x
 
         FR ->
             Fr (Fr.fromLinearScale x)
@@ -156,7 +156,7 @@ fromLinearScale system x =
 -}
 toLinearScale : Grade -> Float
 toLinearScale =
-    map ( Us.toLinearScale, Fr.toLinearScale, Br.toLinearScale )
+    unwrap ( identity, Fr.toLinearScale, Br.toLinearScale )
 
 
 {-| Smallest possible grade
@@ -173,7 +173,7 @@ This ignores modifiers and some intermediate levels.
 -}
 next : Grade -> Grade
 next =
-    flatmap ( Us.next, Fr.next, Br.next )
+    map ((+) 1)
 
 
 {-| Previous discrete grade in the current grading system.
@@ -183,7 +183,7 @@ This ignores modifiers and some intermediate levels.
 -}
 prev : Grade -> Grade
 prev =
-    flatmap ( Us.prev, Fr.prev, Br.prev )
+    map ((+) -1)
 
 
 {-| Compare two grades and return an ordering relation
@@ -192,13 +192,13 @@ compare : Grade -> Grade -> Order
 compare a b =
     case ( a, b ) of
         ( Us x, Us y ) ->
-            Us.order x y
+            Basics.compare x y
 
         ( Fr x, Fr y ) ->
-            Fr.order x y
+            Basics.compare x y
 
         ( Br x, Br y ) ->
-            Br.order x y
+            Basics.compare x y
 
         _ ->
             Basics.compare (toLinearScale a) (toLinearScale b)
@@ -222,8 +222,21 @@ to system grade =
             toLinearScale grade |> fromLinearScale system
 
 
-map : ( Us.Grade -> a, Fr.Grade -> a, Br.Grade -> a ) -> Grade -> a
-map ( f, g, h ) grade =
+map : (Float -> Float) -> Grade -> Grade
+map f grade =
+    case grade of
+        Us x ->
+            Us (f x)
+
+        Fr x ->
+            Fr (f x)
+
+        Br x ->
+            Br (f x)
+
+
+unwrap : ( Float -> a, Float -> a, Float -> a ) -> Grade -> a
+unwrap ( f, g, h ) grade =
     case grade of
         Us x ->
             f x
@@ -233,16 +246,3 @@ map ( f, g, h ) grade =
 
         Br x ->
             h x
-
-
-flatmap : ( Us.Grade -> Us.Grade, Fr.Grade -> Fr.Grade, Br.Grade -> Br.Grade ) -> Grade -> Grade
-flatmap ( f, g, h ) grade =
-    case grade of
-        Us x ->
-            Us (f x)
-
-        Fr x ->
-            Fr (g x)
-
-        Br x ->
-            Br (h x)
