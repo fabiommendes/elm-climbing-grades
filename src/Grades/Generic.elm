@@ -16,7 +16,7 @@ The grading API is provided as attributes from specially constructed records.
 
 ## Specific systems
 
-@docs br, font, fr, us, vgrade
+@docs br, font, fr, us, yds, vgrade
 
 -}
 
