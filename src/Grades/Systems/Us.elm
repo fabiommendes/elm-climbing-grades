@@ -1,5 +1,6 @@
 module Grades.Systems.Us exposing
     ( Grade
+    , fromLinearScale
     , grade
     , parse
     , show
@@ -9,7 +10,7 @@ module Grades.Systems.Us exposing
 import Grades.Levels.ABCD as Lvl
 import Grades.Levels.Mod as Mod
 import Grades.Parser exposing (usParser)
-import Grades.Util exposing (splitNum)
+import Grades.Util exposing (normalizeNum, splitNum)
 import Parser
 
 
@@ -85,3 +86,8 @@ parse st =
 zero : Grade
 zero =
     grade -4 Lvl.A Mod.Base
+
+
+fromLinearScale : Float -> Float
+fromLinearScale =
+    normalizeNum

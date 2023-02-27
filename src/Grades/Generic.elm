@@ -1,7 +1,6 @@
 module Grades.Generic exposing
     ( Generic, boulder, climb
-    , br, font, fr, us, vgrade
-    , yds
+    , br, font, fr, us, yds, vgrade
     )
 
 {-| Abstracts the Bouldering vs. Climbing grades.
@@ -132,7 +131,7 @@ us =
         , to = \_ x -> x
         , zero = Us.zero
         , toLinearScale = identity
-        , fromLinearScale = \_ -> identity
+        , fromLinearScale = \_ -> Us.fromLinearScale
         }
 
 
@@ -203,5 +202,5 @@ vgrade =
         , to = \_ x -> x
         , zero = Hueco.zero
         , toLinearScale = identity
-        , fromLinearScale = \_ -> identity
+        , fromLinearScale = \_ -> Hueco.fromLinearScale
         }

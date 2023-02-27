@@ -117,4 +117,4 @@ splitNum x =
 
 normalizeNum : Float -> Float
 normalizeNum =
-    (*) 10000 >> round >> toFloat >> flip (/) 10000
+    (*) 4 >> round >> toFloat >> flip (/) 4

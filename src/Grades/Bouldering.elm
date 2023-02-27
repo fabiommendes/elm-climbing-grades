@@ -113,7 +113,7 @@ fromLinearScale : System -> Float -> Grade
 fromLinearScale system x =
     case system of
         VGrade ->
-            Hueco x
+            Hueco (Hueco.fromLinearScale x)
 
         Fontainbleau ->
             Font (Font.fromLinearScale x)

@@ -1,5 +1,6 @@
 module Grades.Systems.Hueco exposing
     ( Grade
+    , fromLinearScale
     , grade
     , parse
     , show
@@ -8,6 +9,7 @@ module Grades.Systems.Hueco exposing
 
 import Grades.Levels.Mod as Mod
 import Grades.Parser exposing (vParser)
+import Grades.Util exposing (normalizeNum)
 import Parser exposing (..)
 
 
@@ -63,3 +65,8 @@ parse st =
 zero : Grade
 zero =
     -1
+
+
+fromLinearScale : Float -> Float
+fromLinearScale =
+    normalizeNum

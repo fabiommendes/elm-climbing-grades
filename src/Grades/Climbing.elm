@@ -143,7 +143,7 @@ fromLinearScale : System -> Float -> Grade
 fromLinearScale system x =
     case system of
         US ->
-            Us x
+            Us (Us.fromLinearScale x)
 
         FR ->
             Fr (Fr.fromLinearScale x)
